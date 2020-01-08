@@ -5,36 +5,79 @@ const pool = new Pool({
   host: 'localhost',
   database: 'lightbnb'
 });
-  const options = {
-    city: 'Vancouver'
+  const property = {
+    owner_id:103, 
+    title:'descript', 
+    description:'Daily every', 
+    thumbnail_photo_url: 'https://images.pexels.com/photos/2088258/table-dining-room-chair-dining-area-2088258.jpeg', 
+    cover_photo_url:'https://images.pexels.com/photos/2088258/table-dining-room-chair-dining-area-2088258.jpeg?auto=compress&cs=tinysrgb&h=350', 
+    cost_per_night: 2438, 
+    parking_spaces: 8, 
+    number_of_bathrooms: 2, 
+    number_of_bedrooms:1,
+    province:'Prince Edward Island', 
+    city:'Charlottetown', 
+    country:'Canada', 
+    active: true,
+    street:'1716 Misih Highway', 
+    post_code:'48752'
   }
-  const limit = 5;
-  // 1
-  const queryParams = [];
-  // 2
-  let queryString = `
-  SELECT properties.*, avg(property_reviews.rating) as average_rating
-  FROM properties
-  JOIN property_reviews ON properties.id = property_id
-  `;
 
-  // 3
-  if (options.city) {
-    queryParams.push(`%${options.city}%`);
-    queryString += `WHERE city LIKE $${queryParams.length} `;
-  }
+  const {
+    owner_id,
+    title,
+    description,
+    thumbnail_photo_url,
+    cover_photo_url,
+    cost_per_night,
+    street,
+    city,
+    province,
+    post_code,
+    country,
+    active,
+    parking_spaces,
+    number_of_bathrooms,
+    number_of_bedrooms
+  } = property;
 
-  // 4
-  queryParams.push(limit);
-  queryString += `
-  GROUP BY properties.id
-  ORDER BY cost_per_night
-  LIMIT $${queryParams.length};
-  `;
-
-  // 5
-  console.log(queryString, queryParams);
-
-  // 6
-  return pool.query(queryString, queryParams)
-  .then(res => res.rows);
+  const queryString = `
+  INSERT INTO properties (
+    title, 
+    description, 
+    owner_id, 
+    cover_photo_url, 
+    thumbnail_photo_url, 
+    cost_per_night, 
+    parking_spaces, 
+    number_of_bathrooms, 
+    number_of_bedrooms, 
+    active, 
+    province, 
+    city, 
+    country, 
+    street, 
+    post_code) 
+    VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+      )
+      RETURNING *;
+  `
+  return pool.query(queryString, [
+    title,
+    description,
+    owner_id,
+    cover_photo_url,
+    thumbnail_photo_url,
+    cost_per_night,
+    parking_spaces,
+    number_of_bathrooms,
+    number_of_bedrooms,
+    active,
+    province,
+    city,
+    country,
+    street,
+    post_code,
+    ])
+      .then(res => console.log(res.rows));
