@@ -5,12 +5,36 @@ const pool = new Pool({
   host: 'localhost',
   database: 'lightbnb'
 });
-  const queryString = `
-  SELECT *
-    FROM reservations
-    WHERE guest_id = $1
-    LIMIT $2;
-` 
-return pool.query(queryString, [269, 3])
-  .then(res => console.log(res.rows))
-  .catch(err => console.log(err.stack))
+  const options = {
+    city: 'Vancouver'
+  }
+  const limit = 5;
+  // 1
+  const queryParams = [];
+  // 2
+  let queryString = `
+  SELECT properties.*, avg(property_reviews.rating) as average_rating
+  FROM properties
+  JOIN property_reviews ON properties.id = property_id
+  `;
+
+  // 3
+  if (options.city) {
+    queryParams.push(`%${options.city}%`);
+    queryString += `WHERE city LIKE $${queryParams.length} `;
+  }
+
+  // 4
+  queryParams.push(limit);
+  queryString += `
+  GROUP BY properties.id
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length};
+  `;
+
+  // 5
+  console.log(queryString, queryParams);
+
+  // 6
+  return pool.query(queryString, queryParams)
+  .then(res => res.rows);
