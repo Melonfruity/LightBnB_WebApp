@@ -1,5 +1,5 @@
 // const properties = require('./json/properties.json');
-const users = require('./json/users.json');
+// const users = require('./json/users.json');
 const { Pool } = require('pg');
 const pool = new Pool({
   user: 'postgres',
@@ -24,7 +24,7 @@ const getUserWithEmail = function(email) {
     LIMIT 1;
   `
   
-  pool.query(queryString, [email])
+  return pool.query(queryString, [email])
     .then(res => {
       if (res) {
         return res.rows[0];
@@ -49,7 +49,7 @@ const getUserWithId = function(id) {
     LIMIT 1;
   `
   
-  pool.query(queryString, [id])
+  return pool.query(queryString, [id])
     .then(res => {
       if (res.rows) {
         return res.rows[0];
@@ -78,7 +78,9 @@ const addUser =  function(user) {
     ) RETURNING *;
   `
   return pool.query(queryString, [name, email, password])
-      .then(res => res.rows[0])
+      .then(res => {
+        return res.rows[0];
+      })
       .catch(err => console.log(err.stack))
 }
 exports.addUser = addUser;
@@ -91,7 +93,15 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  const queryString = `
+    SELECT *
+      FROM reservations
+      WHERE guest_id = $1
+      LIMIT $2;
+  ` 
+  return pool.query(queryString, [guest_id, limit])
+    .then(res => res.rows)
+    .catch(err => console.log(err.stack))
 }
 exports.getAllReservations = getAllReservations;
 

@@ -5,20 +5,12 @@ const pool = new Pool({
   host: 'localhost',
   database: 'lightbnb'
 });
-const queryString = `
-    SELECT email
-    FROM users
-    WHERE id = $1
-    LIMIT 1;
-  `
-  
-  pool.query(queryString, ['9999999999999'])
-    .then(res => {
-      if (res.rows) {
-        console.log(res.rows)
-        return res.rows[0];
-      } else {
-        return null
-      }
-    })
-    .catch(err => {return null});
+  const queryString = `
+  SELECT *
+    FROM reservations
+    WHERE guest_id = $1
+    LIMIT $2;
+` 
+return pool.query(queryString, [269, 3])
+  .then(res => console.log(res.rows))
+  .catch(err => console.log(err.stack))
